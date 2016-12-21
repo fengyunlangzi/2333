@@ -1,0 +1,701 @@
+{|class="wikitable"
+|-
+|模块||数量||功能
+|-
+|[[ mCookie-Core+/zh]]||1||CPU
+|-
+|[[ mCookie-CoreUSBttl/zh]]||1||USB
+|-
+|[[ Microduino-Joystick/zh]]||2||摇杆
+|-
+| [[mCookie-OLED/zh]]||1||显示屏
+|-
+| [[mCookie-Hub/zh]]||1||base板
+|-
+|}
+==='''源码'''===
+----
+#include "U8glib.h"
+#include <Microduino_Key.h>
+U8GLIB_SH1106_128X64 u8g(U8G_I2C_OPT_NONE);
+Key KeyA(A0, INPUT);     
+Key KeyB(A0, INPUT);
+Key KeyC(A0, INPUT);
+Key KeyD(A0, INPUT);//定义摇杆输入，可自定义端口，但是一定要注意base板上插的端口一定要和代码对应
+
+Key KeyA1(A2,INPUT);
+Key KeyB1(A2,INPUT);
+Key KeyC1(A2,INPUT);
+Key KeyD1(A2,INPUT); 
+////////////////////////////////////////////////////
+//按键定义
+
+////////////////////////////////////////////////////
+//变量定义
+int box_x = 0;
+int box_y = 0;
+int box_width = 2;
+int box_x_length = 98;//x方向32   0-31
+int box_y_length = 62;//y方向20   0-19
+int snake_max_length = 100; //蛇身体最大长度
+int snake_x[100];//蛇身x坐标
+int snake_y[100];//蛇身y坐标
+int snake_body_width = 3; //蛇身方块宽度（正方形）
+int food_x;//食物位置坐标x
+int food_y;//食物位置坐标y
+int snake_length = 3; //当前蛇身长度
+unsigned int game_speed;//游戏速度 单位MS
+int snake_x1[100];//蛇身x坐标
+int snake_y1[100];//蛇身y坐标
+int snake_body_width1 = 3; //蛇身方块宽度（正方形）
+int snake_length1 = 3; //当前蛇身长度
+int logal1_x;
+int logal1_y;
+int logal2_x;
+int logal2_y;
+//////////////////////////////////////////////////////
+
+void setup(void)
+{
+  Serial.begin(115200);   
+}
+
+////////////////////////////////////////////////////
+//欢迎界面
+
+//食物随机坐标生成函数
+void food()
+{
+    int flag = 1;
+    while (flag)
+    {
+        food_x = random(0,(box_x_length-2)/3);
+        food_y = random(0,(box_y_length-2)/3);
+        for (int i = 0; i < snake_length; i++)
+        {
+                if((food_x==snake_x[i])&&(food_y==snake_y[i]))
+                {
+                    break;
+                }
+                    for(int i=0;i < snake_length1; i++)
+                    {
+                      if((food_x==snake_x1[i])&&(food_y==snake_y1[i]))
+                    {
+                    break;
+                    }
+                    flag=0;
+                    }
+                    flag=0;
+        }
+    }
+}
+        
+    
+        
+
+int read_key()
+{
+    int key_temp;
+    if (KeyA.read(680, 720)) {
+        key_temp =1;
+        return key_temp;
+    
+    }
+    if (KeyD.read(310, 350)) {
+        key_temp = 2;
+        return key_temp;
+        Serial.println("KEY DOWN(analog) SHORT_PRESS");
+    }
+    if (KeyB.read(480, 530)) {
+        key_temp = 3;
+        return key_temp;
+          Serial.println("KEY LEFT(analog) LONG_PRESS"); 
+    }
+    if (KeyC.read(830, 870)) {
+        key_temp = 4;
+        return key_temp;
+         Serial.println("KEY RIGHT(analog) SHORT_PRESS");  
+    }
+   
+    return 0;
+}
+int read_key1()
+{
+    int key_temp1;
+    if (KeyA1.read(680, 720)) {
+        key_temp1 =1;
+        return key_temp1;
+    
+    }
+    if (KeyD1.read(310, 350)) {
+        key_temp1 = 2;
+        return key_temp1;
+        Serial.println("KEY DOWN(analog) SHORT_PRESS");
+    }
+    if (KeyB1.read(480, 530)) {
+        key_temp1 = 3;
+        return key_temp1;
+          Serial.println("KEY LEFT(analog) LONG_PRESS"); 
+    }
+    if (KeyC1.read(830, 870)) {
+        key_temp1 = 4;
+        return key_temp1;
+         Serial.println("KEY RIGHT(analog) SHORT_PRESS");  
+    }
+   
+    return 0;
+}
+///////////////////////////////////////
+void snake_frame(int s)
+{
+    u8g.firstPage();
+    do
+    {
+        u8g.drawFrame(box_x, box_y, box_x_length, box_y_length);
+        u8g.setFont(u8g_font_5x8);
+        u8g.setPrintPos(box_x_length + 1, 12);
+        u8g.print("Score");
+        u8g.setPrintPos(box_x_length + 1, 22);
+        u8g.print((snake_length - 3) * 5+(snake_length1 - 3));
+        u8g.setPrintPos(box_x_length + 1, 46);
+        u8g.print("Speed");
+        u8g.setPrintPos(box_x_length + 1, 56);
+        u8g.print(30-s);
+        u8g.drawFrame(food_x*snake_body_width+1, food_y*snake_body_width+1, snake_body_width, snake_body_width);//显示食物
+        u8g.setFont(u8g_font_5x8);
+        u8g.drawStr( logal1_x*snake_body_width+4,logal1_y*snake_body_width+4 , "1");
+        u8g.drawStr( logal2_x*snake_body_width+4,logal2_y*snake_body_width+4 , "2");
+        for (int i = 0; i < snake_length; i++)//显示snake
+        {
+            if(i==0)
+            {
+                u8g.drawBox(snake_x[i]*snake_body_width+1, snake_y[i]*snake_body_width+1, snake_body_width, snake_body_width);
+            }
+            else
+            {
+                u8g.drawFrame(snake_x[i]*snake_body_width+1, snake_y[i]*snake_body_width+1, snake_body_width, snake_body_width);
+            }
+        }
+         for (int i = 0; i < snake_length1; i++)//显示snake
+        {
+            if(i==0)
+            {
+                u8g.drawBox(snake_x1[i]*snake_body_width+1, snake_y1[i]*snake_body_width+1, snake_body_width1, snake_body_width1);
+            }
+            else
+            {
+                u8g.drawFrame(snake_x1[i]*snake_body_width+1, snake_y1[i]*snake_body_width+1, snake_body_width1, snake_body_width1);
+            }
+        }
+    } while (u8g.nextPage());
+}
+
+//移动后坐标变换函数
+void change_con(int DIR)
+{
+    int temp_x[snake_length+2];
+    int temp_y[snake_length+2];
+    for(int i=0;i<snake_length-1;i++)//将旧坐标数据存放到temp数组   最后一位数据无效
+    {
+        temp_x[i]=snake_x[i];
+        temp_y[i]=snake_y[i];
+    }
+    switch(DIR)
+    {
+        case 1: {snake_y[0]-=1;break;}
+        case 2: {snake_y[0]+=1;break;}
+        case 3: {snake_x[0]-=1;  break;}
+        case 4: {snake_x[0]+=1;break;}
+    }
+    for(int i=1;i<snake_length;i++)
+    {
+        snake_x[i]=temp_x[i-1];
+        snake_y[i]=temp_y[i-1];
+    }
+}
+void change_con1(int DIR)
+{
+    int temp_x[snake_length1+2];
+    int temp_y[snake_length1+2];
+    for(int i=0;i<snake_length1-1;i++)//将旧坐标数据存放到temp数组   最后一位数据无效
+    {
+        temp_x[i]=snake_x1[i];
+        temp_y[i]=snake_y1[i];
+    }
+    switch(DIR)
+    {
+        case 1: {snake_y1[0]-=1;break;}
+        case 2: {snake_y1[0]+=1;break;}
+        case 3: {snake_x1[0]-=1;  break;}
+        case 4: {snake_x1[0]+=1;break;}
+    }
+    for(int i=1;i<snake_length;i++)
+    {
+        snake_x1[i]=temp_x[i-1];
+        snake_y1[i]=temp_y[i-1];
+    }
+}
+//吃到食物后坐标变换
+void change_pos()
+{
+    int temp_x[snake_length+2];
+    int temp_y[snake_length+2];
+    for(int i=0;i<snake_length-1;i++)//将旧坐标数据存放到temp数组   最后一位数据无效
+    {
+        temp_x[i]=snake_x[i];
+        temp_y[i]=snake_y[i];
+    }
+    snake_x[0]=food_x;
+    snake_y[0]=food_y;
+    for(int i=1;i<snake_length;i++)
+    {
+        snake_x[i]=temp_x[i-1];
+        snake_y[i]=temp_y[i-1];
+    }
+}
+void change_pos1()
+{
+    int temp_x[snake_length1+2];
+    int temp_y[snake_length1+2];
+    for(int i=0;i<snake_length1-1;i++)//将旧坐标数据存放到temp数组   最后一位数据无效
+    {
+        temp_x[i]=snake_x1[i];
+        temp_y[i]=snake_y1[i];
+    }
+    snake_x[0]=food_x;
+    snake_y[0]=food_y;
+    for(int i=1;i<snake_length;i++)
+    {
+        snake_x1[i]=temp_x[i-1];
+        snake_y1[i]=temp_y[i-1];
+    }
+}
+//判断是否吃到食物 0-没有吃到 1-吃到 2-无效
+int snake_eat_food(int dir)
+{
+    int x_temp=snake_x[0];
+    int y_temp=snake_y[0];
+    switch(dir)
+    {
+        case 1 :y_temp-=1;break;
+        case 2:y_temp+=1;break;
+        case 3:x_temp-=1;break;
+        case 4:x_temp+=1;break;
+    }
+    if((x_temp==food_x)&&(y_temp==food_y))
+    {
+            snake_length+=1;
+            change_pos();
+            return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+int snake_eat_food1(int dir)
+{
+    int x_temp=snake_x1[0];
+    int y_temp=snake_y1[0];
+    switch(dir)
+    {
+        case 1 :y_temp-=1;break;
+        case 2:y_temp+=1;break;
+        case 3:x_temp-=1;break;
+        case 4:x_temp+=1;break;
+    }
+    if((x_temp==food_x)&&(y_temp==food_y))
+    {
+            snake_length+=1;
+            change_pos1();
+            return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+//判断是否撞墙 0-没有撞到 1-撞到 2-无效
+int snake_knock_wall(int dir)
+{
+    int x_temp=snake_x[0];
+    int y_temp=snake_y[0];
+    switch(dir)
+    {
+        case 1:y_temp-=1;break;
+        case 2 :y_temp+=1;break;
+        case 3:x_temp-=1;break;
+        case 4 :x_temp+=1;break;
+    }
+    if(x_temp<0||x_temp>31||y_temp<0||y_temp>19)
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+int snake_knock_wall1(int dir)
+{
+    int x_temp=snake_x1[0];
+    int y_temp=snake_y1[0];
+    switch(dir)
+    {
+        case 1:y_temp-=1;break;
+        case 2 :y_temp+=1;break;
+        case 3:x_temp-=1;break;
+        case 4 :x_temp+=1;break;
+    }
+    if(x_temp<0||x_temp>31||y_temp<0||y_temp>19)
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+//判断是否吃到自己 0-没有吃到 1-吃到 2-无效
+int snake_eat_body(int dir)
+{
+    int x_temp=snake_x[0];
+    int y_temp=snake_y[0];
+    switch(dir)
+    {
+        case 1:y_temp-=1;break;
+        case 2 :y_temp+=1;break;
+        case 3 :x_temp-=1;break;
+        case 4 :x_temp+=1;break;
+    }
+    for(int i=1;i<snake_length;i++)
+    {
+        if((snake_x[0]==snake_x[i])&&(snake_y[0]==snake_y[i]))
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
+int snake_eat_body1(int dir)
+{
+    int x_temp=snake_x1[0];
+    int y_temp=snake_y1[0];
+    switch(dir)
+    {
+        case 1:y_temp-=1;break;
+        case 2 :y_temp+=1;break;
+        case 3 :x_temp-=1;break;
+        case 4 :x_temp+=1;break;
+    }
+    for(int i=1;i<snake_length1;i++)
+    {
+        if((snake_x1[0]==snake_x1[i])&&(snake_y1[0]==snake_y1[i]))
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
+int snake_eat_snake2(){
+   for(int i=1;i<snake_length;i++)
+    {
+        if((snake_x1[0]==snake_x[i])&&(snake_y1[0]==snake_y[i]))
+        {
+          return 1;
+        }
+    }
+}
+int snake_eat_snake1(){        
+         for(int i=1;i<snake_length1;i++)
+    {
+        if((snake_x[0]==snake_x1[i])&&(snake_y[0]==snake_y1[i]))
+        {
+          return 1;
+        }
+    }
+}
+int snake_eat_snake3(){        
+        if((snake_x[0]==snake_x1[0])&&(snake_y[0]==snake_y1[0]))
+        {
+          return 1;
+    }
+}
+       
+        
+
+
+
+void player1win()//游戏结束
+{
+    u8g.firstPage();
+    do
+    {
+        u8g.setFont(u8g_font_gdr14r);
+        u8g.setPrintPos(0, 40);
+        u8g.print("player1 win");
+    } while (u8g.nextPage());   
+    snake_length=3;
+    snake_x[0] = 5; snake_y[0] = 5;//snake起始坐标
+    snake_x[1] = snake_x[0]   - 1; snake_y[1] = snake_y[0];//snake起始坐标
+    snake_x[2] = snake_x[1]   - 1; snake_y[2] = snake_y[1];//snake起始坐标
+     snake_length1=3;
+    snake_x1[0] = 15; snake_y1[0] = 15;//snake起始坐标
+    snake_x1[1] = snake_x1[0]   + 1; snake_y1[1] = snake_y1[0];//snake起始坐标
+    snake_x1[2] = snake_x1[1]   + 1; snake_y1[2] = snake_y1[1];//snake起始坐标
+}
+void tie()//游戏结束
+{
+    u8g.firstPage();
+    do
+    {
+        u8g.setFont(u8g_font_gdr14r);
+        u8g.setPrintPos(0, 40);
+        u8g.print("tie");
+    } while (u8g.nextPage());   
+    snake_length=3;
+    snake_x[0] = 5; snake_y[0] = 5;//snake起始坐标
+    snake_x[1] = snake_x[0]   - 1; snake_y[1] = snake_y[0];//snake起始坐标
+    snake_x[2] = snake_x[1]   - 1; snake_y[2] = snake_y[1];//snake起始坐标
+     snake_length1=3;
+    snake_x1[0] = 15; snake_y1[0] = 15;//snake起始坐标
+    snake_x1[1] = snake_x1[0]   + 1; snake_y1[1] = snake_y1[0];//snake起始坐标
+    snake_x1[2] = snake_x1[1]   + 1; snake_y1[2] = snake_y1[1];//snake起始坐标
+}
+void player2win()//游戏结束
+{
+    u8g.firstPage();
+    do
+    {
+        u8g.setFont(u8g_font_gdr14r);
+        u8g.setPrintPos(0, 40);
+        u8g.print("player2 win");
+    } while (u8g.nextPage());   
+    snake_length=3;
+    snake_x[0] = 5; snake_y[0] = 5;//snake起始坐标
+    snake_x[1] = snake_x[0]   - 1; snake_y[1] = snake_y[0];//snake起始坐标
+    snake_x[2] = snake_x[1]   - 1; snake_y[2] = snake_y[1];//snake起始坐标
+     snake_length1=3;
+    snake_x1[0] = 15; snake_y1[0] = 15;//snake起始坐标
+    snake_x1[1] = snake_x1[0]   + 1; snake_y1[1] = snake_y1[0];//snake起始坐标
+    snake_x1[2] = snake_x1[1]   + 1; snake_y1[2] = snake_y1[1];//snake起始坐标
+}
+//主函数
+
+void snake()
+{
+    int wina;
+    int winb;
+    int flag = 1; //标志
+    snake_x[0] = 5; snake_y[0] = 5;//snake起始坐标
+    snake_x[1] = snake_x[0]   - 1; snake_y[1] = snake_y[0];//snake起始坐标
+    snake_x[2] = snake_x[1]   - 1; snake_y[2] = snake_y[1];//snake起始坐标
+    int snake_dir1=3;
+    snake_x1[0] = 15; snake_y1[0] = 15;//snake起始坐标
+    snake_x1[1] = snake_x1[0]   +1; snake_y1[1] = snake_y1[0];//snake起始坐标
+    snake_x1[2] = snake_x1[1]   + 1; snake_y1[2] = snake_y1[1];//snake起始坐标
+    logal1_x=snake_x[0];logal1_y=snake_y[0]+1;logal2_x=snake_x1[0];logal2_y=snake_y1[0]-1;
+    int snake_dir=4;
+    game_speed=30;
+    int food_flag=1;
+    food();
+    while (flag)
+    {
+        snake_frame(game_speed);
+        delay(game_speed);
+        switch(read_key())
+        {
+            case 1:
+                if(snake_dir!=2)
+                {
+                    snake_dir=1;                   
+                    break;
+                }
+            case 2:
+                if(snake_dir!=1)
+                {
+                    snake_dir=2;
+                    break;
+                }
+                case 3:
+                if(snake_dir!=4)
+                {
+                    snake_dir=3;
+                    break;
+                }
+                case 4:
+                if(snake_dir!=3)
+                {
+                    snake_dir=4;
+                    break;
+                }  
+                  default:
+                 
+                break;
+        }
+         switch(read_key1())
+        {
+            case 1:
+                if(snake_dir1!=2)
+                {
+                    snake_dir1=1;
+                    break;
+                }
+            case 2:
+                if(snake_dir1!=1)
+                {
+                    snake_dir1=2;
+                    break;
+                }
+                case 3:
+                if(snake_dir1!=4)
+                {
+                    snake_dir1=3;
+                    break;
+                }
+                case 4:
+                if(snake_dir1!=3)
+                {
+                    snake_dir1=4;
+                    break;
+                }
+                break;
+        }
+     
+
+
+                
+        if(snake_eat_food(snake_dir)==1)
+        {
+            food();
+            if(snake_length<10){game_speed=30;}
+            if(snake_length<30&&snake_length>=10){game_speed=20;}
+            if(snake_length<50&&snake_length>=30){game_speed=10;}
+            if(snake_length>=50){game_speed=0;}
+            wina=1;
+            flag=0;
+        }
+        else
+        {
+            if(snake_knock_wall(snake_dir==1))
+            {
+             wina=-1;
+                flag=0;
+            }
+            else
+            {
+                if(snake_eat_body(snake_dir)==1)
+                {
+                    wina=-1;
+                    flag=0;
+                }
+                else
+                {
+                    change_con(snake_dir);
+                    wina=0;
+                }
+            }
+        }
+       
+    
+       if(snake_eat_food1(snake_dir1)==1)
+        {
+            food();
+           winb=1;
+           flag=0;
+        }
+        else
+        {
+            if(snake_knock_wall1(snake_dir1==1))
+            {
+                winb=-1;
+                flag=0;
+            }
+            else
+            {
+                if(snake_eat_body1(snake_dir1)==1)
+                {
+                    winb=-1;
+                    flag=0;
+                }
+                else
+                {
+                    change_con1(snake_dir1);
+                    winb=0;
+                }
+            }
+        }
+        if(snake_eat_snake2()==1){
+          winb=1;
+          flag=0;
+        }
+        if(snake_eat_snake1()==1){
+          wina=1;
+          flag=0;
+        }
+        if(snake_eat_snake3()==1){
+          wina=0;
+          winb=0;
+        }
+           if(snake_dir1==1){
+                  logal2_x=snake_x1[0]+1;
+                  logal2_y=snake_y1[0];
+                }
+                if(snake_dir1==2){
+                  logal2_x=snake_x1[0]+1;
+                  logal2_y=snake_y1[0];
+                }
+                if(snake_dir1==3){
+                  logal2_x=snake_x1[0];
+                  logal2_y=snake_y1[0]-1;
+                }
+                 if(snake_dir1==4){
+                  logal2_x=snake_x1[0];
+                  logal2_y=snake_y1[0]+1;
+                }
+         if(snake_dir==1){
+                  logal1_x=snake_x[0]+1;
+                  logal1_y=snake_y[0];
+                }
+                if(snake_dir==2){
+                  logal1_x=snake_x[0]+1;
+                  logal1_y=snake_y[0];
+                }
+                if(snake_dir==3){
+                  logal1_x=snake_x[0];
+                  logal1_y=snake_y[0]-1;
+                }
+                 if(snake_dir==4){
+                  logal1_x=snake_x[0];
+                  logal1_y=snake_y[0]+1;
+                }
+        
+        
+
+   if(wina>winb){
+    player1win();
+    delay(1000);
+   }
+    if(winb>wina){
+    player2win();
+    delay(1000);
+  }
+          if((wina==winb)&&(flag==0)){
+     tie();
+     delay(1000);
+   }
+ 
+    }
+}
+
+
+
+void loop(void)//主循环函数
+{
+   
+            snake();
+}
+
+        
+    
+}
