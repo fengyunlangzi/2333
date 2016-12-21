@@ -1,54 +1,37 @@
-{|class="wikitable"
-|-
-|Ä£¿é||ÊıÁ¿||¹¦ÄÜ
-|-
-|[[ mCookie-Core+/zh]]||1||CPU
-|-
-|[[ mCookie-CoreUSBttl/zh]]||1||USB
-|-
-|[[ Microduino-Joystick/zh]]||2||Ò¡¸Ë
-|-
-| [[mCookie-OLED/zh]]||1||ÏÔÊ¾ÆÁ
-|-
-| [[mCookie-Hub/zh]]||1||base°å
-|-
-|}
-==='''Ô´Âë'''===
-----
 #include "U8glib.h"
 #include <Microduino_Key.h>
 U8GLIB_SH1106_128X64 u8g(U8G_I2C_OPT_NONE);
 Key KeyA(A0, INPUT);     
 Key KeyB(A0, INPUT);
 Key KeyC(A0, INPUT);
-Key KeyD(A0, INPUT);//¶¨ÒåÒ¡¸ËÊäÈë£¬¿É×Ô¶¨Òå¶Ë¿Ú£¬µ«ÊÇÒ»¶¨Òª×¢Òâbase°åÉÏ²åµÄ¶Ë¿ÚÒ»¶¨ÒªºÍ´úÂë¶ÔÓ¦
+Key KeyD(A0, INPUT);//å®šä¹‰æ‘‡æ†è¾“å…¥ï¼Œå¯è‡ªå®šä¹‰ç«¯å£ï¼Œä½†æ˜¯ä¸€å®šè¦æ³¨æ„baseæ¿ä¸Šæ’çš„ç«¯å£ä¸€å®šè¦å’Œä»£ç å¯¹åº”
 
 Key KeyA1(A2,INPUT);
 Key KeyB1(A2,INPUT);
 Key KeyC1(A2,INPUT);
 Key KeyD1(A2,INPUT); 
 ////////////////////////////////////////////////////
-//°´¼ü¶¨Òå
+//æŒ‰é”®å®šä¹‰
 
 ////////////////////////////////////////////////////
-//±äÁ¿¶¨Òå
+//å˜é‡å®šä¹‰
 int box_x = 0;
 int box_y = 0;
 int box_width = 2;
-int box_x_length = 98;//x·½Ïò32   0-31
-int box_y_length = 62;//y·½Ïò20   0-19
-int snake_max_length = 100; //ÉßÉíÌå×î´ó³¤¶È
-int snake_x[100];//ÉßÉíx×ø±ê
-int snake_y[100];//ÉßÉíy×ø±ê
-int snake_body_width = 3; //ÉßÉí·½¿é¿í¶È£¨Õı·½ĞÎ£©
-int food_x;//Ê³ÎïÎ»ÖÃ×ø±êx
-int food_y;//Ê³ÎïÎ»ÖÃ×ø±êy
-int snake_length = 3; //µ±Ç°ÉßÉí³¤¶È
-unsigned int game_speed;//ÓÎÏ·ËÙ¶È µ¥Î»MS
-int snake_x1[100];//ÉßÉíx×ø±ê
-int snake_y1[100];//ÉßÉíy×ø±ê
-int snake_body_width1 = 3; //ÉßÉí·½¿é¿í¶È£¨Õı·½ĞÎ£©
-int snake_length1 = 3; //µ±Ç°ÉßÉí³¤¶È
+int box_x_length = 98;//xæ–¹å‘32   0-31
+int box_y_length = 62;//yæ–¹å‘20   0-19
+int snake_max_length = 100; //è›‡èº«ä½“æœ€å¤§é•¿åº¦
+int snake_x[100];//è›‡èº«xåæ ‡
+int snake_y[100];//è›‡èº«yåæ ‡
+int snake_body_width = 3; //è›‡èº«æ–¹å—å®½åº¦ï¼ˆæ­£æ–¹å½¢ï¼‰
+int food_x;//é£Ÿç‰©ä½ç½®åæ ‡x
+int food_y;//é£Ÿç‰©ä½ç½®åæ ‡y
+int snake_length = 3; //å½“å‰è›‡èº«é•¿åº¦
+unsigned int game_speed;//æ¸¸æˆé€Ÿåº¦ å•ä½MS
+int snake_x1[100];//è›‡èº«xåæ ‡
+int snake_y1[100];//è›‡èº«yåæ ‡
+int snake_body_width1 = 3; //è›‡èº«æ–¹å—å®½åº¦ï¼ˆæ­£æ–¹å½¢ï¼‰
+int snake_length1 = 3; //å½“å‰è›‡èº«é•¿åº¦
 int logal1_x;
 int logal1_y;
 int logal2_x;
@@ -61,9 +44,9 @@ void setup(void)
 }
 
 ////////////////////////////////////////////////////
-//»¶Ó­½çÃæ
+//æ¬¢è¿ç•Œé¢
 
-//Ê³ÎïËæ»ú×ø±êÉú³Éº¯Êı
+//é£Ÿç‰©éšæœºåæ ‡ç”Ÿæˆå‡½æ•°
 void food()
 {
     int flag = 1;
@@ -161,11 +144,11 @@ void snake_frame(int s)
         u8g.print("Speed");
         u8g.setPrintPos(box_x_length + 1, 56);
         u8g.print(30-s);
-        u8g.drawFrame(food_x*snake_body_width+1, food_y*snake_body_width+1, snake_body_width, snake_body_width);//ÏÔÊ¾Ê³Îï
+        u8g.drawFrame(food_x*snake_body_width+1, food_y*snake_body_width+1, snake_body_width, snake_body_width);//æ˜¾ç¤ºé£Ÿç‰©
         u8g.setFont(u8g_font_5x8);
         u8g.drawStr( logal1_x*snake_body_width+4,logal1_y*snake_body_width+4 , "1");
         u8g.drawStr( logal2_x*snake_body_width+4,logal2_y*snake_body_width+4 , "2");
-        for (int i = 0; i < snake_length; i++)//ÏÔÊ¾snake
+        for (int i = 0; i < snake_length; i++)//æ˜¾ç¤ºsnake
         {
             if(i==0)
             {
@@ -176,7 +159,7 @@ void snake_frame(int s)
                 u8g.drawFrame(snake_x[i]*snake_body_width+1, snake_y[i]*snake_body_width+1, snake_body_width, snake_body_width);
             }
         }
-         for (int i = 0; i < snake_length1; i++)//ÏÔÊ¾snake
+         for (int i = 0; i < snake_length1; i++)//æ˜¾ç¤ºsnake
         {
             if(i==0)
             {
@@ -190,12 +173,12 @@ void snake_frame(int s)
     } while (u8g.nextPage());
 }
 
-//ÒÆ¶¯ºó×ø±ê±ä»»º¯Êı
+//ç§»åŠ¨ååæ ‡å˜æ¢å‡½æ•°
 void change_con(int DIR)
 {
     int temp_x[snake_length+2];
     int temp_y[snake_length+2];
-    for(int i=0;i<snake_length-1;i++)//½«¾É×ø±êÊı¾İ´æ·Åµ½tempÊı×é   ×îºóÒ»Î»Êı¾İÎŞĞ§
+    for(int i=0;i<snake_length-1;i++)//å°†æ—§åæ ‡æ•°æ®å­˜æ”¾åˆ°tempæ•°ç»„   æœ€åä¸€ä½æ•°æ®æ— æ•ˆ
     {
         temp_x[i]=snake_x[i];
         temp_y[i]=snake_y[i];
@@ -217,7 +200,7 @@ void change_con1(int DIR)
 {
     int temp_x[snake_length1+2];
     int temp_y[snake_length1+2];
-    for(int i=0;i<snake_length1-1;i++)//½«¾É×ø±êÊı¾İ´æ·Åµ½tempÊı×é   ×îºóÒ»Î»Êı¾İÎŞĞ§
+    for(int i=0;i<snake_length1-1;i++)//å°†æ—§åæ ‡æ•°æ®å­˜æ”¾åˆ°tempæ•°ç»„   æœ€åä¸€ä½æ•°æ®æ— æ•ˆ
     {
         temp_x[i]=snake_x1[i];
         temp_y[i]=snake_y1[i];
@@ -235,12 +218,12 @@ void change_con1(int DIR)
         snake_y1[i]=temp_y[i-1];
     }
 }
-//³Ôµ½Ê³Îïºó×ø±ê±ä»»
+//åƒåˆ°é£Ÿç‰©ååæ ‡å˜æ¢
 void change_pos()
 {
     int temp_x[snake_length+2];
     int temp_y[snake_length+2];
-    for(int i=0;i<snake_length-1;i++)//½«¾É×ø±êÊı¾İ´æ·Åµ½tempÊı×é   ×îºóÒ»Î»Êı¾İÎŞĞ§
+    for(int i=0;i<snake_length-1;i++)//å°†æ—§åæ ‡æ•°æ®å­˜æ”¾åˆ°tempæ•°ç»„   æœ€åä¸€ä½æ•°æ®æ— æ•ˆ
     {
         temp_x[i]=snake_x[i];
         temp_y[i]=snake_y[i];
@@ -257,7 +240,7 @@ void change_pos1()
 {
     int temp_x[snake_length1+2];
     int temp_y[snake_length1+2];
-    for(int i=0;i<snake_length1-1;i++)//½«¾É×ø±êÊı¾İ´æ·Åµ½tempÊı×é   ×îºóÒ»Î»Êı¾İÎŞĞ§
+    for(int i=0;i<snake_length1-1;i++)//å°†æ—§åæ ‡æ•°æ®å­˜æ”¾åˆ°tempæ•°ç»„   æœ€åä¸€ä½æ•°æ®æ— æ•ˆ
     {
         temp_x[i]=snake_x1[i];
         temp_y[i]=snake_y1[i];
@@ -270,7 +253,7 @@ void change_pos1()
         snake_y1[i]=temp_y[i-1];
     }
 }
-//ÅĞ¶ÏÊÇ·ñ³Ôµ½Ê³Îï 0-Ã»ÓĞ³Ôµ½ 1-³Ôµ½ 2-ÎŞĞ§
+//åˆ¤æ–­æ˜¯å¦åƒåˆ°é£Ÿç‰© 0-æ²¡æœ‰åƒåˆ° 1-åƒåˆ° 2-æ— æ•ˆ
 int snake_eat_food(int dir)
 {
     int x_temp=snake_x[0];
@@ -315,7 +298,7 @@ int snake_eat_food1(int dir)
         return 0;
     }
 }
-//ÅĞ¶ÏÊÇ·ñ×²Ç½ 0-Ã»ÓĞ×²µ½ 1-×²µ½ 2-ÎŞĞ§
+//åˆ¤æ–­æ˜¯å¦æ’å¢™ 0-æ²¡æœ‰æ’åˆ° 1-æ’åˆ° 2-æ— æ•ˆ
 int snake_knock_wall(int dir)
 {
     int x_temp=snake_x[0];
@@ -356,7 +339,7 @@ int snake_knock_wall1(int dir)
         return 0;
     }
 }
-//ÅĞ¶ÏÊÇ·ñ³Ôµ½×Ô¼º 0-Ã»ÓĞ³Ôµ½ 1-³Ôµ½ 2-ÎŞĞ§
+//åˆ¤æ–­æ˜¯å¦åƒåˆ°è‡ªå·± 0-æ²¡æœ‰åƒåˆ° 1-åƒåˆ° 2-æ— æ•ˆ
 int snake_eat_body(int dir)
 {
     int x_temp=snake_x[0];
@@ -426,7 +409,7 @@ int snake_eat_snake3(){
 
 
 
-void player1win()//ÓÎÏ·½áÊø
+void player1win()//æ¸¸æˆç»“æŸ
 {
     u8g.firstPage();
     do
@@ -436,15 +419,15 @@ void player1win()//ÓÎÏ·½áÊø
         u8g.print("player1 win");
     } while (u8g.nextPage());   
     snake_length=3;
-    snake_x[0] = 5; snake_y[0] = 5;//snakeÆğÊ¼×ø±ê
-    snake_x[1] = snake_x[0]   - 1; snake_y[1] = snake_y[0];//snakeÆğÊ¼×ø±ê
-    snake_x[2] = snake_x[1]   - 1; snake_y[2] = snake_y[1];//snakeÆğÊ¼×ø±ê
+    snake_x[0] = 5; snake_y[0] = 5;//snakeèµ·å§‹åæ ‡
+    snake_x[1] = snake_x[0]   - 1; snake_y[1] = snake_y[0];//snakeèµ·å§‹åæ ‡
+    snake_x[2] = snake_x[1]   - 1; snake_y[2] = snake_y[1];//snakeèµ·å§‹åæ ‡
      snake_length1=3;
-    snake_x1[0] = 15; snake_y1[0] = 15;//snakeÆğÊ¼×ø±ê
-    snake_x1[1] = snake_x1[0]   + 1; snake_y1[1] = snake_y1[0];//snakeÆğÊ¼×ø±ê
-    snake_x1[2] = snake_x1[1]   + 1; snake_y1[2] = snake_y1[1];//snakeÆğÊ¼×ø±ê
+    snake_x1[0] = 15; snake_y1[0] = 15;//snakeèµ·å§‹åæ ‡
+    snake_x1[1] = snake_x1[0]   + 1; snake_y1[1] = snake_y1[0];//snakeèµ·å§‹åæ ‡
+    snake_x1[2] = snake_x1[1]   + 1; snake_y1[2] = snake_y1[1];//snakeèµ·å§‹åæ ‡
 }
-void tie()//ÓÎÏ·½áÊø
+void tie()//æ¸¸æˆç»“æŸ
 {
     u8g.firstPage();
     do
@@ -454,15 +437,15 @@ void tie()//ÓÎÏ·½áÊø
         u8g.print("tie");
     } while (u8g.nextPage());   
     snake_length=3;
-    snake_x[0] = 5; snake_y[0] = 5;//snakeÆğÊ¼×ø±ê
-    snake_x[1] = snake_x[0]   - 1; snake_y[1] = snake_y[0];//snakeÆğÊ¼×ø±ê
-    snake_x[2] = snake_x[1]   - 1; snake_y[2] = snake_y[1];//snakeÆğÊ¼×ø±ê
+    snake_x[0] = 5; snake_y[0] = 5;//snakeèµ·å§‹åæ ‡
+    snake_x[1] = snake_x[0]   - 1; snake_y[1] = snake_y[0];//snakeèµ·å§‹åæ ‡
+    snake_x[2] = snake_x[1]   - 1; snake_y[2] = snake_y[1];//snakeèµ·å§‹åæ ‡
      snake_length1=3;
-    snake_x1[0] = 15; snake_y1[0] = 15;//snakeÆğÊ¼×ø±ê
-    snake_x1[1] = snake_x1[0]   + 1; snake_y1[1] = snake_y1[0];//snakeÆğÊ¼×ø±ê
-    snake_x1[2] = snake_x1[1]   + 1; snake_y1[2] = snake_y1[1];//snakeÆğÊ¼×ø±ê
+    snake_x1[0] = 15; snake_y1[0] = 15;//snakeèµ·å§‹åæ ‡
+    snake_x1[1] = snake_x1[0]   + 1; snake_y1[1] = snake_y1[0];//snakeèµ·å§‹åæ ‡
+    snake_x1[2] = snake_x1[1]   + 1; snake_y1[2] = snake_y1[1];//snakeèµ·å§‹åæ ‡
 }
-void player2win()//ÓÎÏ·½áÊø
+void player2win()//æ¸¸æˆç»“æŸ
 {
     u8g.firstPage();
     do
@@ -472,28 +455,28 @@ void player2win()//ÓÎÏ·½áÊø
         u8g.print("player2 win");
     } while (u8g.nextPage());   
     snake_length=3;
-    snake_x[0] = 5; snake_y[0] = 5;//snakeÆğÊ¼×ø±ê
-    snake_x[1] = snake_x[0]   - 1; snake_y[1] = snake_y[0];//snakeÆğÊ¼×ø±ê
-    snake_x[2] = snake_x[1]   - 1; snake_y[2] = snake_y[1];//snakeÆğÊ¼×ø±ê
+    snake_x[0] = 5; snake_y[0] = 5;//snakeèµ·å§‹åæ ‡
+    snake_x[1] = snake_x[0]   - 1; snake_y[1] = snake_y[0];//snakeèµ·å§‹åæ ‡
+    snake_x[2] = snake_x[1]   - 1; snake_y[2] = snake_y[1];//snakeèµ·å§‹åæ ‡
      snake_length1=3;
-    snake_x1[0] = 15; snake_y1[0] = 15;//snakeÆğÊ¼×ø±ê
-    snake_x1[1] = snake_x1[0]   + 1; snake_y1[1] = snake_y1[0];//snakeÆğÊ¼×ø±ê
-    snake_x1[2] = snake_x1[1]   + 1; snake_y1[2] = snake_y1[1];//snakeÆğÊ¼×ø±ê
+    snake_x1[0] = 15; snake_y1[0] = 15;//snakeèµ·å§‹åæ ‡
+    snake_x1[1] = snake_x1[0]   + 1; snake_y1[1] = snake_y1[0];//snakeèµ·å§‹åæ ‡
+    snake_x1[2] = snake_x1[1]   + 1; snake_y1[2] = snake_y1[1];//snakeèµ·å§‹åæ ‡
 }
-//Ö÷º¯Êı
+//ä¸»å‡½æ•°
 
 void snake()
 {
     int wina;
     int winb;
-    int flag = 1; //±êÖ¾
-    snake_x[0] = 5; snake_y[0] = 5;//snakeÆğÊ¼×ø±ê
-    snake_x[1] = snake_x[0]   - 1; snake_y[1] = snake_y[0];//snakeÆğÊ¼×ø±ê
-    snake_x[2] = snake_x[1]   - 1; snake_y[2] = snake_y[1];//snakeÆğÊ¼×ø±ê
+    int flag = 1; //æ ‡å¿—
+    snake_x[0] = 5; snake_y[0] = 5;//snakeèµ·å§‹åæ ‡
+    snake_x[1] = snake_x[0]   - 1; snake_y[1] = snake_y[0];//snakeèµ·å§‹åæ ‡
+    snake_x[2] = snake_x[1]   - 1; snake_y[2] = snake_y[1];//snakeèµ·å§‹åæ ‡
     int snake_dir1=3;
-    snake_x1[0] = 15; snake_y1[0] = 15;//snakeÆğÊ¼×ø±ê
-    snake_x1[1] = snake_x1[0]   +1; snake_y1[1] = snake_y1[0];//snakeÆğÊ¼×ø±ê
-    snake_x1[2] = snake_x1[1]   + 1; snake_y1[2] = snake_y1[1];//snakeÆğÊ¼×ø±ê
+    snake_x1[0] = 15; snake_y1[0] = 15;//snakeèµ·å§‹åæ ‡
+    snake_x1[1] = snake_x1[0]   +1; snake_y1[1] = snake_y1[0];//snakeèµ·å§‹åæ ‡
+    snake_x1[2] = snake_x1[1]   + 1; snake_y1[2] = snake_y1[1];//snakeèµ·å§‹åæ ‡
     logal1_x=snake_x[0];logal1_y=snake_y[0]+1;logal2_x=snake_x1[0];logal2_y=snake_y1[0]-1;
     int snake_dir=4;
     game_speed=30;
@@ -690,7 +673,7 @@ void snake()
 
 
 
-void loop(void)//Ö÷Ñ­»·º¯Êı
+void loop(void)//ä¸»å¾ªç¯å‡½æ•°
 {
    
             snake();
